@@ -1,0 +1,7 @@
+/factorio/
+/images/
+/node_modules/
+data.json
+ssr.html
+/.idea/
+*.iml

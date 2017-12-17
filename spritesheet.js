@@ -1,0 +1,349 @@
+const {createCanvas, Image} = require('canvas');
+const fs = require('fs');
+
+const data = JSON.parse(fs.readFileSync("data.json").toString("utf-8"))['raw'];
+
+const directions = ['north', 'east', 'south', 'west'];
+
+function getFile (path) {
+    return fs.readFileSync("factorio/data/" + path.replace(/__/g, ""));
+}
+
+function saveCanvas (path, canvas) {
+    const out = fs.createWriteStream(path);
+    const stream = canvas.pngStream();
+
+    stream.on('data', function (chunk) {
+        out.write(chunk);
+    });
+
+    stream.on('end', function () {
+        // Need this otherwise Node kills threads
+    });
+}
+
+function combineCanvas (first, second) {
+    const canvas = createCanvas(Math.max(first.width, second.width), Math.max(first.height, second.height));
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(first, Math.floor(canvas.width / 2 - first.width / 2), Math.floor(canvas.height / 2 - first.height / 2));
+    ctx.drawImage(second, Math.floor(canvas.width / 2 - second.width / 2), Math.floor(canvas.height / 2 - second.height / 2));
+    return canvas;
+}
+
+function rotateCanvas (canvas, degrees) {
+    const newCanvas = createCanvas(canvas.width, canvas.height);
+    const ctx = newCanvas.getContext("2d");
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate(degrees * Math.PI / 180);
+    ctx.drawImage(canvas, (canvas.width / 2) * -1, (canvas.height / 2) * -1);
+    return newCanvas;
+}
+
+function extendCanvas (canvas, up, right, down, left) {
+    const newCanvas = createCanvas(canvas.width + (right || 0) + (left || 0), canvas.height + (up || 0) + (down || 0));
+    const ctx = newCanvas.getContext("2d");
+    ctx.drawImage(canvas, left || 0, up || 0);
+    return newCanvas;
+}
+
+function processPicture (picture, xOffset, yOffset, widthX, heightY) {
+    if (picture.apply_runtime_tint !== undefined || picture.filenames !== undefined) {
+        return undefined
+    }
+
+    const file = getFile(picture.filename);
+
+    const image = new Image();
+    image.src = file;
+
+    const width = widthX || picture.width;
+    const height = heightY || picture.height;
+
+    let centerX = width / 2;
+    let centerY = height / 2;
+
+    if (picture.shift !== undefined) {
+        centerX = Math.abs((picture.shift[0] - width / 64) * 32);
+        centerY = Math.abs((picture.shift[1] - height / 64) * 32);
+    }
+
+    const canvas = createCanvas(width + (width - centerX), height + (height - centerY));
+
+    const deltaX = (canvas.width / 2) - centerX;
+    const deltaY = (canvas.height / 2) - centerY;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(image, xOffset || picture.x || 0, yOffset || picture.y || 0, width, height, deltaX, deltaY, width, height);
+    return canvas;
+}
+
+function extractFromPicture (name, picture, suffix) {
+    suffix = suffix || "";
+
+    if (picture === undefined) {
+        console.log("Skipping (no data):", name, suffix);
+        return
+    }
+
+    if (picture.filename !== undefined) {
+        let result = name;
+
+        if (suffix !== undefined) {
+            result = result + suffix;
+        }
+
+        if (picture.draw_as_shadow) {
+            result = result + "_shadow";
+        }
+
+        const canvas = processPicture(picture);
+
+        if (canvas === undefined) {
+            console.log("Skipping:", name);
+            return
+        }
+
+        const out = saveCanvas("images/" + result + ".png", canvas);
+    } else if (picture.north !== undefined) {
+        for (let i in directions) {
+            extractFromPicture(name, picture[directions[i]], suffix + "_" + directions[i]);
+        }
+    } else if (picture.layers !== undefined) {
+        if (picture.layers.length === 2 && picture.layers[1].draw_as_shadow !== undefined) {
+            extractFromPicture(name, picture.layers[0], suffix);
+            extractFromPicture(name, picture.layers[1], suffix);
+        } else {
+            for (let i in picture.layers) {
+                extractFromPicture(name, picture.layers[i], suffix + "_" + i);
+            }
+        }
+    } else {
+        for (let i in picture) {
+            if (i === "sheet") {
+                extractFromPicture(name, picture[i], suffix);
+            } else {
+                extractFromPicture(name, picture[i], suffix + "_" + i);
+            }
+        }
+    }
+}
+
+function noop (entity, data) {
+    console.log("TODO:", entity)
+}
+
+function transportBelt (entity, data) {
+    saveCanvas("images/" + entity + "_horizontal.png", processPicture(data.animations));
+    saveCanvas("images/" + entity + "_vertical.png", processPicture(data.animations, 0, 1 * data.animations.height));
+    saveCanvas("images/" + entity + "_bend_right.png", processPicture(data.animations, 0, 8 * data.animations.height));
+    saveCanvas("images/" + entity + "_bend_left.png", processPicture(data.animations, 0, 9 * data.animations.height));
+}
+
+function undergroundBelt (entity, data) {
+    let o = data.structure.direction_out;
+    saveCanvas("images/" + entity + "_out_down.png", combineCanvas(
+        extendCanvas(rotateCanvas(processPicture(data.belt_vertical, 0, 40, 40, 20), 180), 20, 0, 0, 1),
+        processPicture(o.sheet)));
+
+    saveCanvas("images/" + entity + "_out_left.png", combineCanvas(
+        processPicture(data.belt_horizontal),
+        processPicture(o.sheet, 1 * o.sheet.width, 0)));
+
+    saveCanvas("images/" + entity + "_out_up.png", combineCanvas(
+        extendCanvas(processPicture(data.belt_vertical), 0, 0, 0, 1),
+        processPicture(o.sheet, 2 * o.sheet.width, 0)));
+
+    saveCanvas("images/" + entity + "_out_right.png", combineCanvas(
+        extendCanvas(processPicture(data.belt_horizontal, 20, 0, 20, 0), 0, 0, 0, 21),
+        processPicture(o.sheet, 3 * o.sheet.width, 0)));
+
+    let i = data.structure.direction_in;
+    saveCanvas("images/" + entity + "_in_up.png", combineCanvas(
+        extendCanvas(processPicture(data.belt_vertical, 0, 60, 40, 20), 20, 0, 0, 1),
+        processPicture(i.sheet, 0, i.sheet.height)));
+
+    saveCanvas("images/" + entity + "_in_right.png", combineCanvas(
+        extendCanvas(processPicture(data.belt_horizontal, 0, 0, 19, 40), 0, 20, 0, 0),
+        processPicture(i.sheet, 1 * i.sheet.width, i.sheet.height)));
+
+    saveCanvas("images/" + entity + "_in_down.png", combineCanvas(
+        extendCanvas(rotateCanvas(processPicture(data.belt_vertical), 180), 0, 0, 0, 1),
+        processPicture(i.sheet, 2 * i.sheet.width, i.sheet.height)));
+
+    saveCanvas("images/" + entity + "_in_left.png", combineCanvas(
+        extendCanvas(rotateCanvas(processPicture(data.belt_horizontal, 0, 0, 20, 40), 180), 0, 0, 0, 20),
+        processPicture(i.sheet, 3 * i.sheet.width, i.sheet.height)));
+}
+
+function splitter (entity, data) {
+    const s = data.structure;
+    saveCanvas("images/" + entity + "_north.png", combineCanvas(
+        combineCanvas(
+            extendCanvas(processPicture(data.belt_vertical), 0, 30),
+            extendCanvas(processPicture(data.belt_vertical), 0, 0, 0, 30)),
+        processPicture(s.north)));
+
+    saveCanvas("images/" + entity + "_east.png", combineCanvas(
+        combineCanvas(
+            extendCanvas(processPicture(data.belt_horizontal), 34),
+            extendCanvas(processPicture(data.belt_horizontal), 0, 0, 34)),
+        processPicture(s.east)));
+
+    saveCanvas("images/" + entity + "_south.png", combineCanvas(
+        combineCanvas(
+            extendCanvas(rotateCanvas(processPicture(data.belt_vertical), 180), 0, 32),
+            extendCanvas(rotateCanvas(processPicture(data.belt_vertical), 180), 0, 0, 0, 32)),
+        processPicture(s.south)));
+
+    saveCanvas("images/" + entity + "_west.png", combineCanvas(
+        combineCanvas(
+            extendCanvas(rotateCanvas(processPicture(data.belt_horizontal), 180), 34),
+            extendCanvas(rotateCanvas(processPicture(data.belt_horizontal), 180), 0, 0, 34)),
+        processPicture(s.west)));
+}
+
+function inserter (entity, data) {
+    saveCanvas("images/" + entity + "_north.png", combineCanvas(
+        processPicture(data.platform_picture.sheet),
+        extendCanvas(processPicture(data.hand_open_picture), 0, 0, 40, 2)));
+
+    saveCanvas("images/" + entity + "_east.png", combineCanvas(
+        processPicture(data.platform_picture.sheet, 3 * data.platform_picture.sheet.width),
+        combineCanvas(
+            extendCanvas(rotateCanvas(extendCanvas(processPicture(data.hand_base_picture), 15, 15, 15, 15), 35), 0, 0, 20, 10),
+            extendCanvas(rotateCanvas(extendCanvas(processPicture(data.hand_open_picture), 15, 15, 15, 15), 145), 0, 0, 15, 45))));
+
+    saveCanvas("images/" + entity + "_south.png", combineCanvas(
+        processPicture(data.platform_picture.sheet, 2 * data.platform_picture.sheet.width),
+        extendCanvas(rotateCanvas(processPicture(data.hand_open_picture), 180), 32, 0, 0, 2)));
+
+    saveCanvas("images/" + entity + "_west.png", combineCanvas(
+        processPicture(data.platform_picture.sheet, 1 * data.platform_picture.sheet.width),
+        combineCanvas(
+            extendCanvas(rotateCanvas(extendCanvas(processPicture(data.hand_base_picture), 15, 15, 15, 15), -35), 0, 15, 20, 0),
+            extendCanvas(rotateCanvas(extendCanvas(processPicture(data.hand_open_picture), 15, 15, 15, 15), -145), 0, 50, 15, 0))));
+}
+
+function longHandedInserter (entity, data) {
+    saveCanvas("images/" + entity + "_north.png", combineCanvas(
+        processPicture(data.platform_picture.sheet),
+        combineCanvas(
+            extendCanvas(processPicture(data.hand_open_picture), 0, 0, 90, 2),
+            extendCanvas(processPicture(data.hand_base_picture), 0, 0, 30, 3))));
+
+    saveCanvas("images/" + entity + "_east.png", combineCanvas(
+        processPicture(data.platform_picture.sheet, 3 * data.platform_picture.sheet.width),
+        combineCanvas(
+            extendCanvas(rotateCanvas(extendCanvas(processPicture(data.hand_base_picture), 15, 15, 15, 15), 75), 0, 0, 20, 20),
+            extendCanvas(rotateCanvas(extendCanvas(processPicture(data.hand_open_picture), 15, 15, 15, 15), 115), 0, 0, 15, 85))));
+
+    saveCanvas("images/" + entity + "_south.png", combineCanvas(
+        processPicture(data.platform_picture.sheet, 2 * data.platform_picture.sheet.width),
+        combineCanvas(
+            extendCanvas(rotateCanvas(processPicture(data.hand_open_picture), 180), 85, 0, 0, 2),
+            extendCanvas(rotateCanvas(processPicture(data.hand_base_picture), 180), 25, 0, 0, 3))));
+
+    saveCanvas("images/" + entity + "_west.png", combineCanvas(
+        processPicture(data.platform_picture.sheet, 1 * data.platform_picture.sheet.width),
+        combineCanvas(
+            extendCanvas(rotateCanvas(extendCanvas(processPicture(data.hand_base_picture), 15, 15, 15, 15), -75), 0, 15, 20, 0),
+            extendCanvas(rotateCanvas(extendCanvas(processPicture(data.hand_open_picture), 15, 15, 15, 15), -115), 0, 85, 15, 0))));
+}
+
+const special = {
+    "curved-rail": noop,
+    "straight-rail": noop,
+    "beacon": noop,
+    "centrifuge": noop,
+    "pumpjack": noop,
+    "rocket-silo": noop,
+    "underground-belt": undergroundBelt,
+    "fast-underground-belt": undergroundBelt,
+    "express-underground-belt": undergroundBelt,
+    "transport-belt": transportBelt,
+    "fast-transport-belt": transportBelt,
+    "express-transport-belt": transportBelt,
+    "splitter": splitter,
+    "fast-splitter": splitter,
+    "express-splitter": splitter,
+    "inserter": inserter,
+    "stack-inserter": inserter,
+    "filter-inserter": inserter,
+    "burner-inserter": inserter,
+    "fast-inserter": inserter,
+    "stack-filter-inserter": inserter,
+    "long-handed-inserter": longHandedInserter,
+};
+
+for (let category in data) {
+
+    if(category === "technology"
+        || category === "item-subgroup"
+        || category === "tutorial"
+        || category === "simple-entity"
+        || category === "unit"
+        || category === "simple-entity-with-force"
+        || category === "rail-remnants"
+        || category.endsWith("achievement")){
+        continue
+    }
+
+    for (let entity in data[category]) {
+        const e = data[category][entity];
+
+        if(e.flags !== undefined && e.flags.length > 0 && e.flags.indexOf("hidden") >= 0){
+            continue
+        }
+
+        if(e.icon !== undefined){
+            const image = new Image();
+            image.src = getFile(e.icon);
+            const canvas = createCanvas(image.width, image.height);
+            canvas.getContext("2d").drawImage(image, 0, 0);
+            saveCanvas("images/icon_" + entity + ".png", canvas);
+        }
+
+        if (category === "recipe" || category === "item") {
+            continue
+        }
+
+        try {
+            if (special[entity] !== undefined) {
+                special[entity](entity, e);
+                continue
+            }
+
+            if (e.flags === undefined || (e.flags.length > 0 && (e.flags.indexOf("player-creation") < 0 || e.flags.indexOf("placeable-off-grid") >= 0))) {
+                continue
+            }
+
+            // TODO Generate spritesheet for frontend
+            if (e.picture !== undefined) {
+                const picture = extractFromPicture(entity, e.picture);
+            } else if (e.pictures !== undefined) {
+                const picture = extractFromPicture(entity, e.pictures);
+            } else if (e.idle_animation !== undefined) {
+                const picture = extractFromPicture(entity, e.idle_animation);
+            } else if (e.animation !== undefined) {
+                const picture = extractFromPicture(entity, e.animation);
+            } else if (e.animations !== undefined) {
+                const picture = extractFromPicture(entity, e.animations);
+            } else if (e.structure !== undefined) {
+                const picture = extractFromPicture(entity, e.structure);
+            } else if (e.off_animation !== undefined) {
+                const picture = extractFromPicture(entity, e.off_animation);
+            } else if (e.vertical_animation !== undefined && e.horizontal_animation !== undefined) {
+                const picture = extractFromPicture(entity, e.vertical_animation, "_vertical");
+                const picture2 = extractFromPicture(entity, e.horizontal_animation, "_horizontal");
+            } else if (e.picture_off !== undefined) {
+                const picture = extractFromPicture(entity, e.picture_off);
+            } else if (e.power_on_animation !== undefined) {
+                const picture = extractFromPicture(entity, e.power_on_animation);
+            } else {
+                //console.log(category, entity);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+}
