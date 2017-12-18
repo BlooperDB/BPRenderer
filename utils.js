@@ -102,6 +102,16 @@ function isEntityInDirection (entity, target, direction) {
     return 0;
 }
 
+function recipeHasFluids (recipe) {
+    const ingredients = recipe.ingredients || recipe.normal.ingredients;
+    for (let i = 0; i < ingredients.length; i++) {
+        if (ingredients[i].type === "fluid") {
+            return true;
+        }
+    }
+    return false;
+}
+
 module.exports = {
     directions,
     relativeDirections,
@@ -109,5 +119,6 @@ module.exports = {
     entitiesToGrid,
     EntityGridView,
     isEntity,
-    isEntityInDirection
+    isEntityInDirection,
+    recipeHasFluids
 };

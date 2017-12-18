@@ -1,4 +1,5 @@
-const {isEntity, isEntityInDirection} = require("../utils");
+const {isEntityInDirection, recipeHasFluids} = require("../utils");
+const {getRecipes} = require("../factorio");
 
 // TODO Machine interactions
 function render (entity, grid, imageResolver) {
@@ -90,7 +91,11 @@ function getAround (entity, grid) {
         || isHeatExchanger(grid.getRelative(-0.5, -2), 6)
 
         || isFlamethrower(grid.getRelative(1, -1.5), 2)
-        || isFlamethrower(grid.getRelative(-1, -1.5), 6),
+        || isFlamethrower(grid.getRelative(-1, -1.5), 6)
+
+        || isAssembler(grid.getRelative(0, -2), 4)
+
+        || isOffshorePump(grid.getRelative(0, -1), 0),
 
         // East
         isPipe(grid.getRelative(1, 0), 6)
@@ -118,7 +123,11 @@ function getAround (entity, grid) {
         || isHeatExchanger(grid.getRelative(1.5, 0), 6)
 
         || isFlamethrower(grid.getRelative(1.5, -1), 0)
-        || isFlamethrower(grid.getRelative(1.5, 1), 4),
+        || isFlamethrower(grid.getRelative(1.5, 1), 4)
+
+        || isAssembler(grid.getRelative(2, 0), 6)
+
+        || isOffshorePump(grid.getRelative(1, 0), 2),
 
         // South
         isPipe(grid.getRelative(0, 1), 0)
@@ -146,7 +155,11 @@ function getAround (entity, grid) {
         || isHeatExchanger(grid.getRelative(-0.5, 2), 6)
 
         || isFlamethrower(grid.getRelative(1, 1.5), 2)
-        || isFlamethrower(grid.getRelative(-1, 1.5), 6),
+        || isFlamethrower(grid.getRelative(-1, 1.5), 6)
+
+        || isAssembler(grid.getRelative(0, 2), 0)
+
+        || isOffshorePump(grid.getRelative(0, 1), 4),
 
         // West
         isPipe(grid.getRelative(-1, 0), 2)
@@ -175,6 +188,10 @@ function getAround (entity, grid) {
 
         || isFlamethrower(grid.getRelative(-1.5, -1), 0)
         || isFlamethrower(grid.getRelative(-1.5, 1), 4)
+
+        || isAssembler(grid.getRelative(-2, 0), 2)
+
+        || isOffshorePump(grid.getRelative(-1, 0), 6)
     ];
 }
 
@@ -234,6 +251,19 @@ function isFlamethrower (entity, direction) {
 
 function isHeatExchanger (entity, direction) {
     return isEntityInDirection(entity, "heat-exchanger", direction);
+}
+
+function isOffshorePump (entity, direction) {
+    return isEntityInDirection(entity, "offshore-pump", direction);
+}
+
+function isAssembler (entity, direction) {
+    if (isEntityInDirection(entity, "assembling-machine-2", direction) || isEntityInDirection(entity, "assembling-machine-3", direction)) {
+        if (entity.recipe !== undefined && recipeHasFluids(getRecipes()[entity.recipe])) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 module.exports = {

@@ -341,13 +341,47 @@ function stoneWall (entity, data) {
     saveCanvas("images/" + entity + "_corner_left_down_shadow.png", processPicture(data.pictures.corner_left_down.layers[1]));
 }
 
+function assemblingMachine (entity, data) {
+    saveCanvas("images/" + entity + ".png", processPicture(data.animation.layers[0]));
+    saveCanvas("images/" + entity + "_shadow.png", processPicture(data.animation.layers[1]));
+
+    saveCanvas("images/" + entity + "_pipe_north.png", extendCanvas(getImage("base/graphics/entity/" + entity + "/" + entity + "-pipe-N.png"), 0, 0, 100, 5));
+    saveCanvas("images/" + entity + "_pipe_east.png", extendCanvas(getImage("base/graphics/entity/" + entity + "/" + entity + "-pipe-E.png"), 0, 0, 0, 80));
+    saveCanvas("images/" + entity + "_pipe_south.png", extendCanvas(getImage("base/graphics/entity/" + entity + "/" + entity + "-pipe-S.png"), 70, 0, 0, 0));
+    saveCanvas("images/" + entity + "_pipe_west.png", extendCanvas(getImage("base/graphics/entity/" + entity + "/" + entity + "-pipe-W.png"), 0, 77, 0, 0));
+}
+
+function rocketSilo (entity, data) {
+    saveCanvas("images/" + entity + ".png", combineCanvas(
+        combineCanvas(
+            processPicture(data.door_back_sprite),
+            extendCanvas(getImage(data.door_front_sprite.filename), 130, 0, 0, 0)),
+        processPicture(data.base_day_sprite)));
+
+    saveCanvas("images/" + entity + "_shadow.png", processPicture(data.shadow_sprite));
+}
+
+function nuclearReactor (entity, data) {
+    saveCanvas("images/" + entity + ".png", combineCanvas(
+        processPicture(data.lower_layer_picture),
+        processPicture(data.picture.layers[0])
+    ));
+
+    saveCanvas("images/" + entity + "_shadow.png", processPicture(data.picture.layers[1]));
+}
+
+function storageTank (entity, data) {
+    saveCanvas("images/" + entity + "_north.png", processPicture(data.pictures.picture.sheet));
+    saveCanvas("images/" + entity + "_east.png", processPicture(data.pictures.picture.sheet, data.pictures.picture.sheet.width));
+}
+
 const special = {
     "curved-rail": noop,
     "straight-rail": noop,
     "beacon": noop,
     "centrifuge": noop,
     "pumpjack": noop,
-    "rocket-silo": noop,
+    "rocket-silo": rocketSilo,
     "underground-belt": undergroundBelt,
     "fast-underground-belt": undergroundBelt,
     "express-underground-belt": undergroundBelt,
@@ -367,8 +401,11 @@ const special = {
     "roboport": roboport,
     "heat-pipe": heatPipe,
     "stone-wall": stoneWall,
-    "nuclear-reactor": noop,
-    "programmable-speaker": noop
+    "nuclear-reactor": nuclearReactor,
+    "programmable-speaker": noop,
+    "assembling-machine-2": assemblingMachine,
+    "assembling-machine-3": assemblingMachine,
+    "storage-tank": storageTank
 };
 
 for (let category in data) {

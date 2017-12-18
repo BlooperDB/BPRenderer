@@ -37,10 +37,13 @@ const renderers = {
     "steam-engine": "steam-engine",
     "steam-turbine": "steam-turbine",
     "constant-combinator": "constant-combinator",
-    "electric-mining-drill": "electric-mining-drill"
+    "electric-mining-drill": "electric-mining-drill",
+    "offshore-pump": "offshore-pump",
+    "burner-mining-drill": "burner-mining-drill",
 };
 
 let gameData = null;
+let gameRecipes = null;
 
 class Blueprint {
 
@@ -53,27 +56,29 @@ class Blueprint {
         this.entities = data['blueprint']['entities'];
         this.grid = entitiesToGrid(this.entities);
         this.entities.sort(function (a, b) {
-            if(a.name.endsWith("transport-belt") || a.name.endsWith("splitter")){
+            /*
+            if (a.name.endsWith("transport-belt") || a.name.endsWith("splitter")) {
                 return -1;
-            }else if(b.name.endsWith("transport-belt") || b.name.endsWith("splitter")){
+            } else if (b.name.endsWith("transport-belt") || b.name.endsWith("splitter")) {
                 return 1;
             }
 
-            if(a.name === "pipe" || a.name === "pipe-to-ground"){
+            if (a.name === "pipe" || a.name === "pipe-to-ground") {
                 return -1;
-            }else if(b.name === "pipe" || b.name === "pipe-to-ground"){
+            } else if (b.name === "pipe" || b.name === "pipe-to-ground") {
                 return 1;
             }
 
-            if(a.name.endsWith("electric-pole") || a.name.endsWith("substation")){
+            if (a.name.endsWith("electric-pole") || a.name.endsWith("substation")) {
                 return 1;
-            }else if(b.name.endsWith("electric-pole") || b.name.endsWith("substation")){
+            } else if (b.name.endsWith("electric-pole") || b.name.endsWith("substation")) {
                 return -1;
             }
+            */
 
-            if(a.name.endsWith("inserter")){
+            if (a.name.endsWith("inserter")) {
                 return 1;
-            }else if(b.name.endsWith("inserter")){
+            } else if (b.name.endsWith("inserter")) {
                 return -1;
             }
 
@@ -230,15 +235,52 @@ function ParseBP (blueprint) {
     return new Blueprint(json);
 }
 
-
 function LoadData (data) {
+    data = data['raw'];
     const parsed = {};
+    const recipes = {};
     for (let category in data) {
+
+        if (category === "technology"
+            || category === "item-subgroup"
+            || category === "tutorial"
+            || category === "simple-entity"
+            || category === "unit"
+            || category === "simple-entity-with-force"
+            || category === "rail-remnants"
+            || category === "item-group"
+            || category === "particle"
+            || category === "car"
+            || category === "font"
+            || category === "character-corpse"
+            || category === "cargo-wagon"
+            || category === "ammo-category"
+            || category === "ambient-sound"
+            || category === "smoke"
+            || category === "tree"
+            || category === "corpse"
+            || category.endsWith("achievement")) {
+            continue
+        }
+
         for (let entity in data[category]) {
-            parsed[entity] = data[category][entity]
+            if (category === "recipe") {
+                recipes[entity] = data[category][entity];
+            } else {
+                parsed[entity] = data[category][entity];
+            }
         }
     }
     gameData = parsed;
+    gameRecipes = recipes;
+}
+
+function getData () {
+    return gameData;
+}
+
+function getRecipes () {
+    return gameRecipes;
 }
 
 const cache = {};
@@ -266,5 +308,7 @@ function cachedRenderer (entity, grid, imageResolver, shadow) {
 
 module.exports = {
     LoadData,
-    ParseBP
+    ParseBP,
+    getData,
+    getRecipes,
 };
