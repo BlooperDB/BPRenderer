@@ -469,12 +469,46 @@ function flamethrowerTurret (entity, data) {
         processPicture(data.folded_animation.west.layers[2])));
 }
 
+function normalTurret (entity, data) {
+    saveCanvas("images/" + entity + ".png", combineCanvas(
+        processPicture(data.base_picture.layers[0]),
+        processPicture(data.folded_animation.layers[0])));
+
+    let shadow = processPicture(data.folded_animation.layers[1]);
+
+    if (!shadow) {
+        shadow = processPicture(data.folded_animation.layers[2]);
+    }
+
+    if (shadow) {
+        saveCanvas("images/" + entity + "_shadow.png", shadow);
+    }
+}
+
+function pumpjack (entity, data) {
+    saveCanvas("images/" + entity + "_north.png", combineCanvas(
+        processPicture(data.base_picture.sheet),
+        processPicture(data.animations.north)));
+
+    saveCanvas("images/" + entity + "_east.png", combineCanvas(
+        processPicture(data.base_picture.sheet, 1 * data.base_picture.sheet.width),
+        processPicture(data.animations.north)));
+
+    saveCanvas("images/" + entity + "_south.png", combineCanvas(
+        processPicture(data.base_picture.sheet, 2 * data.base_picture.sheet.width),
+        processPicture(data.animations.north)));
+
+    saveCanvas("images/" + entity + "_west.png", combineCanvas(
+        processPicture(data.base_picture.sheet, 3 * data.base_picture.sheet.width),
+        processPicture(data.animations.north)));
+}
+
 const special = {
     "curved-rail": noop,
     "straight-rail": noop,
     "beacon": beacon,
     "centrifuge": centrifuge,
-    "pumpjack": noop,
+    "pumpjack": pumpjack,
     "rocket-silo": rocketSilo,
     "underground-belt": undergroundBelt,
     "fast-underground-belt": undergroundBelt,
@@ -499,7 +533,9 @@ const special = {
     "assembling-machine-2": assemblingMachine,
     "assembling-machine-3": assemblingMachine,
     "storage-tank": storageTank,
-    "flamethrower-turret": flamethrowerTurret
+    "flamethrower-turret": flamethrowerTurret,
+    "laser-turret": normalTurret,
+    "gun-turret": normalTurret
 };
 
 for (let category in data) {
@@ -511,6 +547,7 @@ for (let category in data) {
         || category === "unit"
         || category === "simple-entity-with-force"
         || category === "rail-remnants"
+        || category === "ammo-category"
         || category.endsWith("achievement")) {
         continue
     }
