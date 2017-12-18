@@ -22,7 +22,22 @@ const renderers = {
     "burner-inserter": "inserter",
     "assembling-machine-1": "assembling-machine",
     "assembling-machine-2": "assembling-machine",
-    "assembling-machine-3": "assembling-machine"
+    "assembling-machine-3": "assembling-machine",
+    "chemical-plant": "chemical-plant",
+    "storage-tank": "storage-tank",
+    "oil-refinery": "oil-refinery",
+    "decider-combinator": "decider-combinator",
+    "arithmetic-combinator": "arithmetic-combinator",
+    "pump": "pump",
+    "heat-pipe": "heat-pipe",
+    "stone-wall": "stone-wall",
+    "gate": "gate",
+    "boiler": "boiler",
+    "heat-exchanger": "heat-exchanger",
+    "steam-engine": "steam-engine",
+    "steam-turbine": "steam-turbine",
+    "constant-combinator": "constant-combinator",
+    "electric-mining-drill": "electric-mining-drill"
 };
 
 let gameData = null;
@@ -41,6 +56,12 @@ class Blueprint {
             if(a.name.endsWith("transport-belt") || a.name.endsWith("splitter")){
                 return -1;
             }else if(b.name.endsWith("transport-belt") || b.name.endsWith("splitter")){
+                return 1;
+            }
+
+            if(a.name === "pipe" || a.name === "pipe-to-ground"){
+                return -1;
+            }else if(b.name === "pipe" || b.name === "pipe-to-ground"){
                 return 1;
             }
 
@@ -91,7 +112,7 @@ class Blueprint {
 
     /**
      * @param canvas {HTMLCanvasElement}
-     * @param imageResolver {function(string, string)}
+     * @param imageResolver {function(string, boolean)}
      */
     render (canvas, imageResolver) {
         const size = this.getSize();
@@ -178,7 +199,7 @@ class Blueprint {
             if (renderers[entity.name] !== undefined) {
                 image = cachedRenderer(entity, gridView, imageResolver, false);
             } else {
-                image = imageResolver(entity.name);
+                image = imageResolver(entity.name, false);
             }
 
             if (image) {
@@ -186,6 +207,7 @@ class Blueprint {
                 const startY = Math.floor((relativeY * scaling + (scaling / 2)) - (image.height / 2));
                 ctx.drawImage(image, startX, startY, image.width, image.height)
             } else {
+                console.log("Missing", entity.name);
                 ctx.fillStyle = "#880000";
                 ctx.fillRect(relativeX * scaling, relativeY * scaling, scaling, scaling);
                 ctx.fillStyle = "#000088";

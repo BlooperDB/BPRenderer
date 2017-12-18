@@ -46,6 +46,22 @@ function extendCanvas (canvas, up, right, down, left) {
     return newCanvas;
 }
 
+function getImage (path) {
+    const file = getFile(path);
+
+    const image = new Image();
+    image.src = file;
+
+    return image
+}
+
+function cropImage (image, x, y, width, height) {
+    const canvas = createCanvas(width, height);
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(image, x, y, width, height, 0, 0, width, height);
+    return canvas;
+}
+
 function processPicture (picture, xOffset, yOffset, widthX, heightY) {
     if (picture.apply_runtime_tint !== undefined || picture.filenames !== undefined) {
         return undefined
@@ -63,14 +79,14 @@ function processPicture (picture, xOffset, yOffset, widthX, heightY) {
     let centerY = height / 2;
 
     if (picture.shift !== undefined) {
-        centerX = Math.abs((picture.shift[0] - width / 64) * 32);
-        centerY = Math.abs((picture.shift[1] - height / 64) * 32);
+        centerX = Math.round(Math.abs((picture.shift[0] - width / 64) * 32));
+        centerY = Math.round(Math.abs((picture.shift[1] - height / 64) * 32));
     }
 
     const canvas = createCanvas(width + (width - centerX), height + (height - centerY));
 
-    const deltaX = (canvas.width / 2) - centerX;
-    const deltaY = (canvas.height / 2) - centerY;
+    const deltaX = Math.floor(canvas.width / 2) - centerX;
+    const deltaY = Math.floor(canvas.height / 2) - centerY;
 
     const ctx = canvas.getContext("2d");
     ctx.drawImage(image, xOffset || picture.x || 0, yOffset || picture.y || 0, width, height, deltaX, deltaY, width, height);
@@ -250,6 +266,81 @@ function longHandedInserter (entity, data) {
             extendCanvas(rotateCanvas(extendCanvas(processPicture(data.hand_open_picture), 15, 15, 15, 15), -115), 0, 85, 15, 0))));
 }
 
+function combinatorDisplays () {
+    const grid = [
+        ["empty", "plus", "minus", "multiply", "divide", "modulo"],
+        ["power", "left_shift", "right_shift", "and", "or", "xor"],
+        ["gt", "lt", "eq", "neq", "lte", "gte"]
+    ];
+
+    const width = 15;
+    const height = 11;
+
+    const image = new Image();
+    image.src = getFile("base/graphics/entity/combinator/combinator-displays.png");
+
+    for (let y = 0; y < grid.length; y++) {
+        for (let x = 0; x < grid[y].length; x++) {
+            const canvas = createCanvas(width, height);
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(image, x * width, y * height, width, height, 0, 0, width, height);
+            saveCanvas("images/display_" + grid[y][x] + ".png", canvas);
+        }
+    }
+}
+
+function roboport (entity, data) {
+    saveCanvas("images/roboport.png", combineCanvas(
+        processPicture(data.base),
+        combineCanvas(
+            extendCanvas(processPicture(data.base_patch), 2, 0, 0, 0),
+            combineCanvas(
+                extendCanvas(cropImage(getImage(data.door_animation_up.filename), 0, 0, data.door_animation_up.width, data.door_animation_up.height), 0, 0, 55, 0),
+                combineCanvas(
+                    extendCanvas(cropImage(getImage(data.door_animation_down.filename), 0, 0, data.door_animation_up.width, data.door_animation_up.height), 0, 0, 15, 0),
+                    extendCanvas(cropImage(getImage(data.base_animation.filename), 0, 0, data.base_animation.width, data.base_animation.height), 0, 38, 120, 0)
+                )))));
+}
+
+function heatPipe (entity, data) {
+    saveCanvas("images/" + entity + "_single.png", processPicture(data.connection_sprites.single[0]));
+    saveCanvas("images/" + entity + "_straight_horizontal.png", processPicture(data.connection_sprites.straight_horizontal[0]));
+    saveCanvas("images/" + entity + "_ending_right.png", processPicture(data.connection_sprites.ending_right[0]));
+    saveCanvas("images/" + entity + "_corner_right_up.png", processPicture(data.connection_sprites.corner_right_up[0]));
+    saveCanvas("images/" + entity + "_t_left.png", processPicture(data.connection_sprites.t_left[0]));
+    saveCanvas("images/" + entity + "_t_down.png", processPicture(data.connection_sprites.t_down[0]));
+    saveCanvas("images/" + entity + "_ending_up.png", processPicture(data.connection_sprites.ending_up[0]));
+    saveCanvas("images/" + entity + "_t_right.png", processPicture(data.connection_sprites.t_right[0]));
+    saveCanvas("images/" + entity + "_t_up.png", processPicture(data.connection_sprites.t_up[0]));
+    saveCanvas("images/" + entity + "_ending_left.png", processPicture(data.connection_sprites.ending_left[0]));
+    saveCanvas("images/" + entity + "_ending_down.png", processPicture(data.connection_sprites.ending_down[0]));
+    saveCanvas("images/" + entity + "_straight_vertical.png", processPicture(data.connection_sprites.straight_vertical[0]));
+    saveCanvas("images/" + entity + "_corner_right_down.png", processPicture(data.connection_sprites.corner_right_down[0]));
+    saveCanvas("images/" + entity + "_cross.png", processPicture(data.connection_sprites.cross[0]));
+    saveCanvas("images/" + entity + "_corner_left_down.png", processPicture(data.connection_sprites.corner_left_down[0]));
+    saveCanvas("images/" + entity + "_corner_left_up.png", processPicture(data.connection_sprites.corner_left_up[0]));
+}
+
+function stoneWall (entity, data) {
+    saveCanvas("images/" + entity + "_single.png", processPicture(data.pictures.single.layers[0]));
+    saveCanvas("images/" + entity + "_straight_horizontal.png", processPicture(data.pictures.straight_horizontal[0].layers[0]));
+    saveCanvas("images/" + entity + "_ending_right.png", processPicture(data.pictures.ending_right.layers[0]));
+    saveCanvas("images/" + entity + "_t_up.png", processPicture(data.pictures.t_up.layers[0]));
+    saveCanvas("images/" + entity + "_ending_left.png", processPicture(data.pictures.ending_left.layers[0]));
+    saveCanvas("images/" + entity + "_straight_vertical.png", processPicture(data.pictures.straight_vertical[0].layers[0]));
+    saveCanvas("images/" + entity + "_corner_right_down.png", processPicture(data.pictures.corner_right_down.layers[0]));
+    saveCanvas("images/" + entity + "_corner_left_down.png", processPicture(data.pictures.corner_left_down.layers[0]));
+
+    saveCanvas("images/" + entity + "_single_shadow.png", processPicture(data.pictures.single.layers[1]));
+    saveCanvas("images/" + entity + "_straight_horizontal_shadow.png", processPicture(data.pictures.straight_horizontal[0].layers[1]));
+    saveCanvas("images/" + entity + "_ending_right_shadow.png", processPicture(data.pictures.ending_right.layers[1]));
+    saveCanvas("images/" + entity + "_t_up_shadow.png", processPicture(data.pictures.t_up.layers[1]));
+    saveCanvas("images/" + entity + "_ending_left_shadow.png", processPicture(data.pictures.ending_left.layers[1]));
+    saveCanvas("images/" + entity + "_straight_vertical_shadow.png", processPicture(data.pictures.straight_vertical[0].layers[1]));
+    saveCanvas("images/" + entity + "_corner_right_down_shadow.png", processPicture(data.pictures.corner_right_down.layers[1]));
+    saveCanvas("images/" + entity + "_corner_left_down_shadow.png", processPicture(data.pictures.corner_left_down.layers[1]));
+}
+
 const special = {
     "curved-rail": noop,
     "straight-rail": noop,
@@ -273,29 +364,34 @@ const special = {
     "fast-inserter": inserter,
     "stack-filter-inserter": inserter,
     "long-handed-inserter": longHandedInserter,
+    "roboport": roboport,
+    "heat-pipe": heatPipe,
+    "stone-wall": stoneWall,
+    "nuclear-reactor": noop,
+    "programmable-speaker": noop
 };
 
 for (let category in data) {
 
-    if(category === "technology"
+    if (category === "technology"
         || category === "item-subgroup"
         || category === "tutorial"
         || category === "simple-entity"
         || category === "unit"
         || category === "simple-entity-with-force"
         || category === "rail-remnants"
-        || category.endsWith("achievement")){
+        || category.endsWith("achievement")) {
         continue
     }
 
     for (let entity in data[category]) {
         const e = data[category][entity];
 
-        if(e.flags !== undefined && e.flags.length > 0 && e.flags.indexOf("hidden") >= 0){
+        if (e.flags !== undefined && e.flags.length > 0 && e.flags.indexOf("hidden") >= 0) {
             continue
         }
 
-        if(e.icon !== undefined){
+        if (e.icon !== undefined) {
             const image = new Image();
             image.src = getFile(e.icon);
             const canvas = createCanvas(image.width, image.height);
@@ -339,6 +435,12 @@ for (let category in data) {
                 const picture = extractFromPicture(entity, e.picture_off);
             } else if (e.power_on_animation !== undefined) {
                 const picture = extractFromPicture(entity, e.power_on_animation);
+            } else if (e.sprite !== undefined) {
+                const picture = extractFromPicture(entity, e.sprite);
+            } else if (e.sprites !== undefined) {
+                const picture = extractFromPicture(entity, e.sprites);
+            } else if (e.connection_sprites !== undefined) {
+                const picture = extractFromPicture(entity, e.connection_sprites);
             } else {
                 //console.log(category, entity);
             }
@@ -347,3 +449,5 @@ for (let category in data) {
         }
     }
 }
+
+combinatorDisplays();

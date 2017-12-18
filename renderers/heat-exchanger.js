@@ -5,7 +5,7 @@ function render (entity, grid, imageResolver) {
 }
 
 function renderShadow (entity, grid, imageResolver) {
-    // No Shadow
+    return imageResolver(entity.name + "_" + directions[entity.direction || 0], true);
 }
 
 function getKey (entity, grid) {
