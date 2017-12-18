@@ -43,7 +43,15 @@ function render (bp) {
 
 const bp = ParseBP(blueprint);
 
-fs.writeFileSync("ssr.html", '<img src="' + render(bp).toDataURL() + '" /><textarea>' + JSON.stringify(bp.entities) + '</textarea>');
+let rendered = render(bp);
+fs.writeFileSync("ssr.html", '<img src="' + rendered.toDataURL() + '" /><textarea>' + JSON.stringify(bp.entities) + '</textarea>');
+
+const out = fs.createWriteStream("sample.png");
+const stream = rendered.pngStream();
+
+stream.on('data', function (chunk) {
+    out.write(chunk);
+});
 
 /*
 const loops = 50;
