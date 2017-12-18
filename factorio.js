@@ -40,6 +40,7 @@ const renderers = {
     "electric-mining-drill": "electric-mining-drill",
     "offshore-pump": "offshore-pump",
     "burner-mining-drill": "burner-mining-drill",
+    "flamethrower-turret": "flamethrower-turret"
 };
 
 let gameData = null;

@@ -16,9 +16,9 @@ function render (entity, grid, imageResolver) {
 
         if (icon) {
             if (direction === 0 || direction === 4) {
-                ctx.drawImage(icon, 54, 36);
+                ctx.drawImage(icon, 36, 22);
             } else {
-                ctx.drawImage(icon, 54, 32);
+                ctx.drawImage(icon, 36, 20);
             }
         }
 

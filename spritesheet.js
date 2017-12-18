@@ -83,10 +83,36 @@ function processPicture (picture, xOffset, yOffset, widthX, heightY) {
         centerY = Math.round(Math.abs((picture.shift[1] - height / 64) * 32));
     }
 
-    const canvas = createCanvas(width + (width - centerX), height + (height - centerY));
+    let canvasWidth = width + Math.abs((width / 2) - centerX);
+    let canvasHeight = height + Math.abs((height / 2) - centerY);
 
-    const deltaX = Math.floor(canvas.width / 2) - centerX;
-    const deltaY = Math.floor(canvas.height / 2) - centerY;
+    const currentDeltaX = Math.round(canvasWidth / 2) - centerX;
+    const currentDeltaY = Math.round(canvasHeight / 2) - centerY;
+
+    if (picture.filename.indexOf("door-front") >= 0) {
+        console.log(currentDeltaX + width, currentDeltaY + height, canvasWidth, canvasHeight)
+    }
+
+    if (currentDeltaX < 0) {
+        canvasWidth += Math.abs(currentDeltaX) * 2;
+    } else if (currentDeltaX + width > canvasWidth) {
+        canvasWidth += (currentDeltaX + width) - canvasWidth
+    }
+
+    if (currentDeltaY < 0) {
+        canvasHeight += Math.abs(currentDeltaY) * 2;
+    } else if (currentDeltaY + height > canvasHeight) {
+        canvasHeight += (currentDeltaY + height) - canvasHeight
+    }
+
+    if (picture.filename.indexOf("door-front") >= 0) {
+        console.log(currentDeltaX + width, currentDeltaY + height, canvasWidth, canvasHeight)
+    }
+
+    const canvas = createCanvas(canvasWidth, canvasHeight);
+
+    const deltaX = Math.round(canvasWidth / 2) - centerX;
+    const deltaY = Math.round(canvasHeight / 2) - centerY;
 
     const ctx = canvas.getContext("2d");
     ctx.drawImage(image, xOffset || picture.x || 0, yOffset || picture.y || 0, width, height, deltaX, deltaY, width, height);
@@ -115,7 +141,6 @@ function extractFromPicture (name, picture, suffix) {
         const canvas = processPicture(picture);
 
         if (canvas === undefined) {
-            console.log("Skipping:", name);
             return
         }
 
@@ -293,13 +318,12 @@ function roboport (entity, data) {
     saveCanvas("images/roboport.png", combineCanvas(
         processPicture(data.base),
         combineCanvas(
-            extendCanvas(processPicture(data.base_patch), 2, 0, 0, 0),
+            processPicture(data.base_patch),
             combineCanvas(
-                extendCanvas(cropImage(getImage(data.door_animation_up.filename), 0, 0, data.door_animation_up.width, data.door_animation_up.height), 0, 0, 55, 0),
+                processPicture(data.door_animation_up),
                 combineCanvas(
-                    extendCanvas(cropImage(getImage(data.door_animation_down.filename), 0, 0, data.door_animation_up.width, data.door_animation_up.height), 0, 0, 15, 0),
-                    extendCanvas(cropImage(getImage(data.base_animation.filename), 0, 0, data.base_animation.width, data.base_animation.height), 0, 38, 120, 0)
-                )))));
+                    processPicture(data.door_animation_down),
+                    processPicture(data.base_animation))))));
 }
 
 function heatPipe (entity, data) {
@@ -375,11 +399,81 @@ function storageTank (entity, data) {
     saveCanvas("images/" + entity + "_east.png", processPicture(data.pictures.picture.sheet, data.pictures.picture.sheet.width));
 }
 
+function beacon (entity, data) {
+    saveCanvas("images/" + entity + ".png", combineCanvas(
+        processPicture(data.base_picture),
+        processPicture(data.animation)))
+}
+
+function centrifuge (entity, data) {
+    saveCanvas("images/" + entity + ".png", combineCanvas(
+        processPicture(data.idle_animation.layers[0]),
+        combineCanvas(
+            processPicture(data.idle_animation.layers[2]),
+            processPicture(data.idle_animation.layers[4]))));
+
+    saveCanvas("images/" + entity + "_shadow.png", combineCanvas(
+        processPicture(data.idle_animation.layers[1]),
+        combineCanvas(
+            processPicture(data.idle_animation.layers[3]),
+            processPicture(data.idle_animation.layers[5]))));
+}
+
+function flamethrowerTurret (entity, data) {
+    saveCanvas("images/" + entity + "_north.png", combineCanvas(
+        extendCanvas(processPicture(data.fluid_box.pipe_picture.east), 64, 0, 0, 32),
+        combineCanvas(
+            extendCanvas(processPicture(data.fluid_box.pipe_picture.west), 64, 32, 0, 0),
+            combineCanvas(
+                processPicture(data.base_picture.north.layers[0]),
+                processPicture(data.folded_animation.north.layers[0])))));
+
+    saveCanvas("images/" + entity + "_east.png", combineCanvas(
+        extendCanvas(processPicture(data.fluid_box.pipe_picture.north), 0, 64, 32, 0),
+        combineCanvas(
+            extendCanvas(processPicture(data.fluid_box.pipe_picture.south), 32, 64, 0, 0),
+            combineCanvas(
+                processPicture(data.base_picture.east.layers[0]),
+                processPicture(data.folded_animation.east.layers[0])))));
+
+    saveCanvas("images/" + entity + "_south.png", combineCanvas(
+        extendCanvas(processPicture(data.fluid_box.pipe_picture.east), 0, 0, 64, 32),
+        combineCanvas(
+            extendCanvas(processPicture(data.fluid_box.pipe_picture.west), 0, 32, 64, 0),
+            combineCanvas(
+                processPicture(data.base_picture.south.layers[0]),
+                processPicture(data.folded_animation.south.layers[0])))));
+
+    saveCanvas("images/" + entity + "_west.png", combineCanvas(
+        extendCanvas(processPicture(data.fluid_box.pipe_picture.north), 0, 0, 32, 64),
+        combineCanvas(
+            extendCanvas(processPicture(data.fluid_box.pipe_picture.south), 32, 0, 0, 64),
+            combineCanvas(
+                processPicture(data.base_picture.west.layers[0]),
+                processPicture(data.folded_animation.west.layers[0])))));
+
+    saveCanvas("images/" + entity + "_north_shadow.png", combineCanvas(
+        processPicture(data.base_picture.north.layers[2]),
+        processPicture(data.folded_animation.north.layers[2])));
+
+    saveCanvas("images/" + entity + "_east_shadow.png", combineCanvas(
+        processPicture(data.base_picture.east.layers[2]),
+        processPicture(data.folded_animation.east.layers[2])));
+
+    saveCanvas("images/" + entity + "_south_shadow.png", combineCanvas(
+        processPicture(data.base_picture.south.layers[2]),
+        processPicture(data.folded_animation.south.layers[2])));
+
+    saveCanvas("images/" + entity + "_west_shadow.png", combineCanvas(
+        processPicture(data.base_picture.west.layers[2]),
+        processPicture(data.folded_animation.west.layers[2])));
+}
+
 const special = {
     "curved-rail": noop,
     "straight-rail": noop,
-    "beacon": noop,
-    "centrifuge": noop,
+    "beacon": beacon,
+    "centrifuge": centrifuge,
     "pumpjack": noop,
     "rocket-silo": rocketSilo,
     "underground-belt": undergroundBelt,
@@ -402,10 +496,10 @@ const special = {
     "heat-pipe": heatPipe,
     "stone-wall": stoneWall,
     "nuclear-reactor": nuclearReactor,
-    "programmable-speaker": noop,
     "assembling-machine-2": assemblingMachine,
     "assembling-machine-3": assemblingMachine,
-    "storage-tank": storageTank
+    "storage-tank": storageTank,
+    "flamethrower-turret": flamethrowerTurret
 };
 
 for (let category in data) {
@@ -479,7 +573,7 @@ for (let category in data) {
             } else if (e.connection_sprites !== undefined) {
                 const picture = extractFromPicture(entity, e.connection_sprites);
             } else {
-                //console.log(category, entity);
+                console.log("TODO:", entity);
             }
         } catch (err) {
             console.log(err);
