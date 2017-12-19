@@ -192,9 +192,52 @@ class Blueprint {
             }
         }
 
-        // Second pass: entities
+        // Second pass: rails
+        for (let pass = 1; pass <= 5; pass++) {
+            for (let i = 0; i < this.entities.length; i++) {
+                const entity = this.entities[i];
+
+                if (entity.name !== "straight-rail" && entity.name !== "curved-rail") {
+                    continue
+                }
+
+                const position = entity['position'];
+                const relativeX = position.x + Math.abs(size.minX) + 0.5;
+                const relativeY = position.y + Math.abs(size.minY) + 0.5;
+
+                const direction = entity.direction || 0;
+                let image;
+
+                if (direction === 0 || direction === 4) {
+                    image = imageResolver(entity.name + "_vertical_pass_" + pass, false);
+                } else if (direction === 2 || direction === 6) {
+                    image = imageResolver(entity.name + "_horizontal_pass_" + pass, false);
+                } else if (direction === 1) {
+                    image = imageResolver(entity.name + "_diagonal_right_top_pass_" + pass, false);
+                } else if (direction === 5) {
+                    image = imageResolver(entity.name + "_diagonal_left_bottom_pass_" + pass, false);
+                } else if (direction === 3) {
+                    image = imageResolver(entity.name + "_diagonal_right_bottom_pass_" + pass, false);
+                } else if (direction === 7) {
+                    image = imageResolver(entity.name + "_diagonal_left_top_pass_" + pass, false);
+                }
+
+                if (image) {
+                    const startX = Math.floor((relativeX * scaling + (scaling / 2)) - (image.width / 2));
+                    const startY = Math.floor((relativeY * scaling + (scaling / 2)) - (image.height / 2));
+                    ctx.drawImage(image, startX, startY, image.width, image.height)
+                }
+            }
+        }
+
+        // Third pass: entities
         for (let i = 0; i < this.entities.length; i++) {
             const entity = this.entities[i];
+
+            if (entity.name === "straight-rail" || entity.name === "curved-rail") {
+                continue
+            }
+
             const position = entity['position'];
             const relativeX = position.x + Math.abs(size.minX) + 0.5;
             const relativeY = position.y + Math.abs(size.minY) + 0.5;
@@ -214,7 +257,7 @@ class Blueprint {
                 const startY = Math.floor((relativeY * scaling + (scaling / 2)) - (image.height / 2));
                 ctx.drawImage(image, startX, startY, image.width, image.height)
             } else {
-                //console.log("Missing", entity.name);
+                console.log("Missing", entity.name);
                 ctx.fillStyle = "#880000";
                 ctx.fillRect(relativeX * scaling, relativeY * scaling, scaling, scaling);
                 ctx.fillStyle = "#000088";
