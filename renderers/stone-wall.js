@@ -89,8 +89,13 @@ function isGate (entity, direction) {
     return isEntityInDirection(entity, "gate", direction);
 }
 
+function getSize (entity) {
+    return [1, 1]
+}
+
 module.exports = {
     render,
     renderShadow,
-    getKey
+    getKey,
+    getSize
 };

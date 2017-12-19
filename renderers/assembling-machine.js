@@ -56,8 +56,13 @@ function getKey (entity, grid) {
     return (entity.recipe !== undefined ? entity.recipe : "") + "_" + entity.direction
 }
 
+function getSize (entity) {
+    return [3, 3]
+}
+
 module.exports = {
     render,
     renderShadow,
-    getKey
+    getKey,
+    getSize
 };

@@ -117,8 +117,13 @@ function isReactor (entity) {
     return isEntity(entity, "nuclear-reactor");
 }
 
+function getSize (entity) {
+    return [1, 1]
+}
+
 module.exports = {
     render,
     renderShadow,
-    getKey
+    getKey,
+    getSize
 };

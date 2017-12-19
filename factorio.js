@@ -100,10 +100,11 @@ class Blueprint {
 
         for (let i = 0; i < this.entities.length; i++) {
             const position = this.entities[i]['position'];
-            minWidth = Math.min(minWidth, position['x']);
-            minHeight = Math.min(minHeight, position['y']);
-            maxWidth = Math.max(maxWidth, position['x']);
-            maxHeight = Math.max(maxHeight, position['y']);
+            const size = getSize(this.entities[i]);
+            minWidth = Math.min(minWidth, position['x'] - size[0] / 2);
+            minHeight = Math.min(minHeight, position['y'] - size[1] / 2);
+            maxWidth = Math.max(maxWidth, position['x'] + size[0] / 2);
+            maxHeight = Math.max(maxHeight, position['y'] + size[1] / 2);
         }
 
         return {
@@ -111,8 +112,8 @@ class Blueprint {
             minY: minHeight,
             maxX: maxWidth,
             maxY: maxHeight,
-            width: Math.abs(minWidth) + maxWidth + 1,
-            height: Math.abs(minHeight) + maxHeight + 1
+            width: Math.ceil(Math.abs(minWidth) + maxWidth),
+            height: Math.ceil(Math.abs(minHeight) + maxHeight)
         }
     }
 
@@ -171,8 +172,8 @@ class Blueprint {
         for (let i = 0; i < this.entities.length; i++) {
             const entity = this.entities[i];
             const position = entity['position'];
-            const relativeX = position.x + Math.abs(size.minX) + 1;
-            const relativeY = position.y + Math.abs(size.minY) + 1;
+            const relativeX = position.x + Math.abs(size.minX) + 0.5;
+            const relativeY = position.y + Math.abs(size.minY) + 0.5;
 
             gridView.setCenter(position.x, position.y);
 
@@ -195,8 +196,8 @@ class Blueprint {
         for (let i = 0; i < this.entities.length; i++) {
             const entity = this.entities[i];
             const position = entity['position'];
-            const relativeX = position.x + Math.abs(size.minX) + 1;
-            const relativeY = position.y + Math.abs(size.minY) + 1;
+            const relativeX = position.x + Math.abs(size.minX) + 0.5;
+            const relativeY = position.y + Math.abs(size.minY) + 0.5;
 
             gridView.setCenter(position.x, position.y);
 
@@ -213,7 +214,7 @@ class Blueprint {
                 const startY = Math.floor((relativeY * scaling + (scaling / 2)) - (image.height / 2));
                 ctx.drawImage(image, startX, startY, image.width, image.height)
             } else {
-                console.log("Missing", entity.name);
+                //console.log("Missing", entity.name);
                 ctx.fillStyle = "#880000";
                 ctx.fillRect(relativeX * scaling, relativeY * scaling, scaling, scaling);
                 ctx.fillStyle = "#000088";
@@ -284,15 +285,20 @@ function getRecipes () {
     return gameRecipes;
 }
 
-const cache = {};
 const required = {};
 
-function cachedRenderer (entity, grid, imageResolver, shadow) {
-    if (required[entity.name] === undefined) {
-        required[entity.name] = require(__dirname + "/renderers/" + renderers[entity.name])
+function cachedRequire (name) {
+    if (required[name] === undefined && renderers[name] !== undefined) {
+        required[name] = require(__dirname + "/renderers/" + renderers[name])
     }
 
-    const renderer = required[entity.name];
+    return required[name];
+}
+
+const cache = {};
+
+function cachedRenderer (entity, grid, imageResolver, shadow) {
+    const renderer = cachedRequire(entity.name);
 
     let key = entity.name + "_" + renderer.getKey(entity, grid);
 
@@ -305,6 +311,16 @@ function cachedRenderer (entity, grid, imageResolver, shadow) {
     }
 
     return cache[key];
+}
+
+function getSize (entity) {
+    const renderer = cachedRequire(entity.name);
+
+    if (renderer && renderer.getSize) {
+        return renderer.getSize(entity)
+    }
+
+    return [1, 1]
 }
 
 module.exports = {

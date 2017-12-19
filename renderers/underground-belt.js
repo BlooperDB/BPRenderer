@@ -14,8 +14,13 @@ function getKey (entity, grid) {
     return (entity.direction || 0) + "_" + (entity.type || "input")
 }
 
+function getSize (entity) {
+    return [1, 1]
+}
+
 module.exports = {
     render,
     renderShadow,
-    getKey
+    getKey,
+    getSize
 };

@@ -118,8 +118,13 @@ function isSplitter (entity, direction) {
     return 0;
 }
 
+function getSize (entity) {
+    return [1, 1]
+}
+
 module.exports = {
     render,
     renderShadow,
-    getKey
+    getKey,
+    getSize
 };
