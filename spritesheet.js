@@ -541,8 +541,58 @@ function straightRail (entity, data) {
     saveCanvas("images/" + entity + "_diagonal_right_top_pass_5.png", processPicture(data.pictures.straight_rail_diagonal_right_top.metals.sheet));
 }
 
+function curvedRail (entity, data) {
+    saveCanvas("images/" + entity + "_vertical_left_top_pass_1.png", processPicture(data.pictures.curved_rail_vertical_left_top.stone_path_background.sheet));
+    saveCanvas("images/" + entity + "_vertical_left_top_pass_2.png", processPicture(data.pictures.curved_rail_vertical_left_top.stone_path.sheet));
+    saveCanvas("images/" + entity + "_vertical_left_top_pass_3.png", processPicture(data.pictures.curved_rail_vertical_left_top.ties.sheet));
+    saveCanvas("images/" + entity + "_vertical_left_top_pass_4.png", processPicture(data.pictures.curved_rail_vertical_left_top.backplates.sheet));
+    saveCanvas("images/" + entity + "_vertical_left_top_pass_5.png", processPicture(data.pictures.curved_rail_vertical_left_top.metals.sheet));
+
+    saveCanvas("images/" + entity + "_vertical_left_bottom_pass_1.png", processPicture(data.pictures.curved_rail_vertical_left_bottom.stone_path_background.sheet));
+    saveCanvas("images/" + entity + "_vertical_left_bottom_pass_2.png", processPicture(data.pictures.curved_rail_vertical_left_bottom.stone_path.sheet));
+    saveCanvas("images/" + entity + "_vertical_left_bottom_pass_3.png", processPicture(data.pictures.curved_rail_vertical_left_bottom.ties.sheet));
+    saveCanvas("images/" + entity + "_vertical_left_bottom_pass_4.png", processPicture(data.pictures.curved_rail_vertical_left_bottom.backplates.sheet));
+    saveCanvas("images/" + entity + "_vertical_left_bottom_pass_5.png", processPicture(data.pictures.curved_rail_vertical_left_bottom.metals.sheet));
+
+    saveCanvas("images/" + entity + "_vertical_right_top_pass_1.png", processPicture(data.pictures.curved_rail_vertical_right_top.stone_path_background.sheet));
+    saveCanvas("images/" + entity + "_vertical_right_top_pass_2.png", processPicture(data.pictures.curved_rail_vertical_right_top.stone_path.sheet));
+    saveCanvas("images/" + entity + "_vertical_right_top_pass_3.png", processPicture(data.pictures.curved_rail_vertical_right_top.ties.sheet));
+    saveCanvas("images/" + entity + "_vertical_right_top_pass_4.png", processPicture(data.pictures.curved_rail_vertical_right_top.backplates.sheet));
+    saveCanvas("images/" + entity + "_vertical_right_top_pass_5.png", processPicture(data.pictures.curved_rail_vertical_right_top.metals.sheet));
+
+    saveCanvas("images/" + entity + "_vertical_right_bottom_pass_1.png", processPicture(data.pictures.curved_rail_vertical_right_bottom.stone_path_background.sheet));
+    saveCanvas("images/" + entity + "_vertical_right_bottom_pass_2.png", processPicture(data.pictures.curved_rail_vertical_right_bottom.stone_path.sheet));
+    saveCanvas("images/" + entity + "_vertical_right_bottom_pass_3.png", processPicture(data.pictures.curved_rail_vertical_right_bottom.ties.sheet));
+    saveCanvas("images/" + entity + "_vertical_right_bottom_pass_4.png", processPicture(data.pictures.curved_rail_vertical_right_bottom.backplates.sheet));
+    saveCanvas("images/" + entity + "_vertical_right_bottom_pass_5.png", processPicture(data.pictures.curved_rail_vertical_right_bottom.metals.sheet));
+
+    saveCanvas("images/" + entity + "_horizontal_left_top_pass_1.png", processPicture(data.pictures.curved_rail_horizontal_left_top.stone_path_background.sheet));
+    saveCanvas("images/" + entity + "_horizontal_left_top_pass_2.png", processPicture(data.pictures.curved_rail_horizontal_left_top.stone_path.sheet));
+    saveCanvas("images/" + entity + "_horizontal_left_top_pass_3.png", processPicture(data.pictures.curved_rail_horizontal_left_top.ties.sheet));
+    saveCanvas("images/" + entity + "_horizontal_left_top_pass_4.png", processPicture(data.pictures.curved_rail_horizontal_left_top.backplates.sheet));
+    saveCanvas("images/" + entity + "_horizontal_left_top_pass_5.png", processPicture(data.pictures.curved_rail_horizontal_left_top.metals.sheet));
+
+    saveCanvas("images/" + entity + "_horizontal_left_bottom_pass_1.png", processPicture(data.pictures.curved_rail_horizontal_left_bottom.stone_path_background.sheet));
+    saveCanvas("images/" + entity + "_horizontal_left_bottom_pass_2.png", processPicture(data.pictures.curved_rail_horizontal_left_bottom.stone_path.sheet));
+    saveCanvas("images/" + entity + "_horizontal_left_bottom_pass_3.png", processPicture(data.pictures.curved_rail_horizontal_left_bottom.ties.sheet));
+    saveCanvas("images/" + entity + "_horizontal_left_bottom_pass_4.png", processPicture(data.pictures.curved_rail_horizontal_left_bottom.backplates.sheet));
+    saveCanvas("images/" + entity + "_horizontal_left_bottom_pass_5.png", processPicture(data.pictures.curved_rail_horizontal_left_bottom.metals.sheet));
+
+    saveCanvas("images/" + entity + "_horizontal_right_top_pass_1.png", processPicture(data.pictures.curved_rail_horizontal_right_top.stone_path_background.sheet));
+    saveCanvas("images/" + entity + "_horizontal_right_top_pass_2.png", processPicture(data.pictures.curved_rail_horizontal_right_top.stone_path.sheet));
+    saveCanvas("images/" + entity + "_horizontal_right_top_pass_3.png", processPicture(data.pictures.curved_rail_horizontal_right_top.ties.sheet));
+    saveCanvas("images/" + entity + "_horizontal_right_top_pass_4.png", processPicture(data.pictures.curved_rail_horizontal_right_top.backplates.sheet));
+    saveCanvas("images/" + entity + "_horizontal_right_top_pass_5.png", processPicture(data.pictures.curved_rail_horizontal_right_top.metals.sheet));
+
+    saveCanvas("images/" + entity + "_horizontal_right_bottom_pass_1.png", processPicture(data.pictures.curved_rail_horizontal_right_bottom.stone_path_background.sheet));
+    saveCanvas("images/" + entity + "_horizontal_right_bottom_pass_2.png", processPicture(data.pictures.curved_rail_horizontal_right_bottom.stone_path.sheet));
+    saveCanvas("images/" + entity + "_horizontal_right_bottom_pass_3.png", processPicture(data.pictures.curved_rail_horizontal_right_bottom.ties.sheet));
+    saveCanvas("images/" + entity + "_horizontal_right_bottom_pass_4.png", processPicture(data.pictures.curved_rail_horizontal_right_bottom.backplates.sheet));
+    saveCanvas("images/" + entity + "_horizontal_right_bottom_pass_5.png", processPicture(data.pictures.curved_rail_horizontal_right_bottom.metals.sheet));
+}
+
 const special = {
-    "curved-rail": noop,
+    "curved-rail": curvedRail,
     "straight-rail": straightRail,
     "beacon": beacon,
     "centrifuge": centrifuge,

@@ -40,7 +40,9 @@ const renderers = {
     "electric-mining-drill": "electric-mining-drill",
     "offshore-pump": "offshore-pump",
     "burner-mining-drill": "burner-mining-drill",
-    "flamethrower-turret": "flamethrower-turret"
+    "flamethrower-turret": "flamethrower-turret",
+    "straight-rail": "straight-rail",
+    "curved-rail": "curved-rail"
 };
 
 let gameData = null;
@@ -208,18 +210,38 @@ class Blueprint {
                 const direction = entity.direction || 0;
                 let image;
 
-                if (direction === 0 || direction === 4) {
-                    image = imageResolver(entity.name + "_vertical_pass_" + pass, false);
-                } else if (direction === 2 || direction === 6) {
-                    image = imageResolver(entity.name + "_horizontal_pass_" + pass, false);
-                } else if (direction === 1) {
-                    image = imageResolver(entity.name + "_diagonal_right_top_pass_" + pass, false);
-                } else if (direction === 5) {
-                    image = imageResolver(entity.name + "_diagonal_left_bottom_pass_" + pass, false);
-                } else if (direction === 3) {
-                    image = imageResolver(entity.name + "_diagonal_right_bottom_pass_" + pass, false);
-                } else if (direction === 7) {
-                    image = imageResolver(entity.name + "_diagonal_left_top_pass_" + pass, false);
+                if (entity.name === "straight-rail") {
+                    if (direction === 0 || direction === 4) {
+                        image = imageResolver(entity.name + "_vertical_pass_" + pass, false);
+                    } else if (direction === 2 || direction === 6) {
+                        image = imageResolver(entity.name + "_horizontal_pass_" + pass, false);
+                    } else if (direction === 1) {
+                        image = imageResolver(entity.name + "_diagonal_right_top_pass_" + pass, false);
+                    } else if (direction === 5) {
+                        image = imageResolver(entity.name + "_diagonal_left_bottom_pass_" + pass, false);
+                    } else if (direction === 3) {
+                        image = imageResolver(entity.name + "_diagonal_right_bottom_pass_" + pass, false);
+                    } else if (direction === 7) {
+                        image = imageResolver(entity.name + "_diagonal_left_top_pass_" + pass, false);
+                    }
+                } else {
+                    if (direction === 0) {
+                        image = imageResolver(entity.name + "_vertical_left_bottom_pass_" + pass, false);
+                    } else if (direction === 1) {
+                        image = imageResolver(entity.name + "_vertical_right_bottom_pass_" + pass, false);
+                    } else if (direction === 2) {
+                        image = imageResolver(entity.name + "_horizontal_left_top_pass_" + pass, false);
+                    } else if (direction === 3) {
+                        image = imageResolver(entity.name + "_horizontal_left_bottom_pass_" + pass, false);
+                    } else if (direction === 4) {
+                        image = imageResolver(entity.name + "_vertical_right_top_pass_" + pass, false);
+                    } else if (direction === 5) {
+                        image = imageResolver(entity.name + "_vertical_left_top_pass_" + pass, false);
+                    } else if (direction === 6) {
+                        image = imageResolver(entity.name + "_horizontal_right_bottom_pass_" + pass, false);
+                    } else if (direction === 7) {
+                        image = imageResolver(entity.name + "_horizontal_right_top_pass_" + pass, false);
+                    }
                 }
 
                 if (image) {
@@ -342,6 +364,10 @@ const cache = {};
 
 function cachedRenderer (entity, grid, imageResolver, shadow) {
     const renderer = cachedRequire(entity.name);
+
+    if (!renderer || !renderer.getKey) {
+        return
+    }
 
     let key = entity.name + "_" + renderer.getKey(entity, grid);
 
