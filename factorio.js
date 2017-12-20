@@ -42,7 +42,9 @@ const renderers = {
     "burner-mining-drill": "burner-mining-drill",
     "flamethrower-turret": "flamethrower-turret",
     "straight-rail": "straight-rail",
-    "curved-rail": "curved-rail"
+    "curved-rail": "curved-rail",
+    "rail-signal": "rail-signal",
+    "rail-chain-signal": "rail-signal"
 };
 
 let gameData = null;
@@ -195,11 +197,16 @@ class Blueprint {
         }
 
         // Second pass: rails
-        for (let pass = 1; pass <= 5; pass++) {
+        let passes = [1, 2, 3, 3.5, 4, 5];
+        for (let z in passes) {
+            const pass = passes[z];
             for (let i = 0; i < this.entities.length; i++) {
                 const entity = this.entities[i];
 
-                if (entity.name !== "straight-rail" && entity.name !== "curved-rail") {
+                if (entity.name !== "straight-rail"
+                    && entity.name !== "curved-rail"
+                    && entity.name !== "rail-signal"
+                    && entity.name !== "rail-chain-signal") {
                     continue
                 }
 
@@ -224,7 +231,7 @@ class Blueprint {
                     } else if (direction === 7) {
                         image = imageResolver(entity.name + "_diagonal_left_top_pass_" + pass, false);
                     }
-                } else {
+                } else if (entity.name === "curved-rail") {
                     if (direction === 0) {
                         image = imageResolver(entity.name + "_vertical_left_bottom_pass_" + pass, false);
                     } else if (direction === 1) {
@@ -241,6 +248,14 @@ class Blueprint {
                         image = imageResolver(entity.name + "_horizontal_right_bottom_pass_" + pass, false);
                     } else if (direction === 7) {
                         image = imageResolver(entity.name + "_horizontal_right_top_pass_" + pass, false);
+                    }
+                } else if (entity.name === "rail-signal") {
+                    if (pass === 3.5) {
+                        image = imageResolver(entity.name + "_rail_" + (entity.direction || 0), false);
+                    }
+                } else if (entity.name === "rail-chain-signal") {
+                    if (pass === 3.5) {
+                        image = imageResolver(entity.name + "_rail_" + (entity.direction || 0), false);
                     }
                 }
 

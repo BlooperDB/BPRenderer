@@ -591,6 +591,39 @@ function curvedRail (entity, data) {
     saveCanvas("images/" + entity + "_horizontal_right_bottom_pass_5.png", processPicture(data.pictures.curved_rail_horizontal_right_bottom.metals.sheet));
 }
 
+function railSignal (entity, data) {
+    for (let i = 0; i < 8; i++){
+        saveCanvas("images/" + entity + "_" + i + ".png", processPicture(data.animation, 0, i * data.animation.height));
+        saveCanvas("images/" + entity + "_rail_" + i + ".png", processPicture(data.rail_piece, i * data.rail_piece.width));
+    }
+}
+
+function railChainSignal (entity, data) {
+    saveCanvas("images/" + entity + "_0.png", extendCanvas(processPicture(data.animation), 0, 0, 0, 64));
+    saveCanvas("images/" + entity + "_rail_0.png", extendCanvas(processPicture(data.rail_piece), 0, 0, 0, 64));
+
+    saveCanvas("images/" + entity + "_1.png", extendCanvas(processPicture(data.animation, 0, 1 * data.animation.height), 64, 0, 0, 64));
+    saveCanvas("images/" + entity + "_rail_1.png", extendCanvas(processPicture(data.rail_piece, 1 * data.rail_piece.width), 64, 0, 0, 64));
+
+    saveCanvas("images/" + entity + "_2.png", extendCanvas(processPicture(data.animation, 0, 2 * data.animation.height), 64, 0, 0, 0));
+    saveCanvas("images/" + entity + "_rail_2.png", extendCanvas(processPicture(data.rail_piece, 2 * data.rail_piece.width), 64, 0, 0, 0));
+
+    saveCanvas("images/" + entity + "_3.png", extendCanvas(processPicture(data.animation, 0, 3 * data.animation.height), 64, 64, 0, 0));
+    saveCanvas("images/" + entity + "_rail_3.png", extendCanvas(processPicture(data.rail_piece, 3 * data.rail_piece.width), 64, 64, 0, 0));
+
+    saveCanvas("images/" + entity + "_4.png", extendCanvas(processPicture(data.animation, 0, 4 * data.animation.height), 0, 128, 0, 0));
+    saveCanvas("images/" + entity + "_rail_4.png", extendCanvas(processPicture(data.rail_piece, 4 * data.rail_piece.width), 0, 128, 0, 0));
+
+    saveCanvas("images/" + entity + "_5.png", extendCanvas(processPicture(data.animation, 0, 5 * data.animation.height), 0, 64, 64, 0));
+    saveCanvas("images/" + entity + "_rail_5.png", extendCanvas(processPicture(data.rail_piece, 5 * data.rail_piece.width), 0, 64, 64, 0));
+
+    saveCanvas("images/" + entity + "_6.png", extendCanvas(processPicture(data.animation, 0, 6 * data.animation.height), 0, 0, 128, 0));
+    saveCanvas("images/" + entity + "_rail_6.png", extendCanvas(processPicture(data.rail_piece, 6 * data.rail_piece.width), 0, 0, 128, 0));
+
+    saveCanvas("images/" + entity + "_7.png", extendCanvas(processPicture(data.animation, 0, 7 * data.animation.height), 0, 0, 64, 64));
+    saveCanvas("images/" + entity + "_rail_7.png", extendCanvas(processPicture(data.rail_piece, 7 * data.rail_piece.width), 0, 0, 64, 64));
+}
+
 const special = {
     "curved-rail": curvedRail,
     "straight-rail": straightRail,
@@ -623,7 +656,9 @@ const special = {
     "storage-tank": storageTank,
     "flamethrower-turret": flamethrowerTurret,
     "laser-turret": normalTurret,
-    "gun-turret": normalTurret
+    "gun-turret": normalTurret,
+    "rail-signal": railSignal,
+    "rail-chain-signal": railChainSignal
 };
 
 for (let category in data) {
