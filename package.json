@@ -1,8 +1,42 @@
 {
-  "scripts": {
-    "spritesheet": "node spritesheet.js"
+  "name": "factorio-renderer",
+  "version": "1.0.0",
+  "description": "A Factorio blueprint renderer. Runs in the browser and in Node.",
+  "main": "dist/factorio-renderer.umd.js",
+  "module": "dist/factorio-renderer.es6.js",
+  "typings": "dist/types/factorio-renderer.d.ts",
+  "files": [
+    "dist"
+  ],
+  "repository": "git@github.com:BlooperDB/BPRenderer.git",
+  "author": "BlooperDB <contact@blooper.io>",
+  "maintainers": [
+    "Matthew McCune <git@mattrick.me>",
+    "Vilsol <vilsol@vil.so>"
+  ],
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "@types/jest": "^22.0.1",
+    "@types/node": "^9.3.0",
+    "coveralls": "^3.0.0",
+    "jest": "^22.1.4",
+    "rimraf": "^2.6.2",
+    "rollup": "^0.54.1",
+    "rollup-plugin-commonjs": "^8.2.6",
+    "rollup-plugin-node-resolve": "^3.0.2",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "rollup-plugin-typescript2": "^0.10.0",
+    "tslint": "^5.9.1",
+    "typedoc": "^0.9.0",
+    "typescript": "^2.6.2"
   },
-  "dependencies": {
-    "canvas": "^2.0.0-alpha.8"
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "tsc --module commonjs --outDir dist/lib && rollup -c rollup.config.ts && typedoc --out dist/docs --target es6 --theme minimal --mode file src",
+    "start": "rollup -c rollup.config.ts -w",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:prod": "npm run lint && npm run test -- --coverage --no-cache"
   }
 }
